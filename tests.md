@@ -19,11 +19,11 @@ https://pypi.python.org/pypi/plone.testing#layer-basics
 Permet d'initialiser une série de tests. Chaque série de test peut être associé à un layer. Un layer met quatre méthodes à disposition :
 
 * `setUp()` => Initialize le layer, appelée une fois par layer.
-* `tearDown()` => Permet de nettoyer ce que le layer à fait, appelée une fois que le layer est fini d'être utilisé.
-* `testSetUp()` => Initialize un test, appelée une fois par test.
-* `testTearDown()` => Permet de nettoyer ce que le layer à fait, appelée après chaque test.
+* `tearDown()` => Permet de nettoyer ce que le layer a fait, appelée une fois que le layer est fini d'être utilisé.
+* `testSetUp()` => Initialise un test, appelée une fois par test.
+* `testTearDown()` => Permet de nettoyer ce que le layer a fait, appelée après chaque test.
 
-Un layer peut dépendre d'autres layers, permettant de tous les initialisé. Example avec trois layers, les tests étant dépendant soit de A, soit de B. Chacun de ses layers étant dépendant de C.
+Un layer peut utiliser d'autres layers comme base, permettant de tous les initialisés. Example avec trois layers, les tests étant dépendant soit de A, soit de B. Ces deux layers ayant C comme base.
 
 ```
 1. C.setUp()
@@ -83,7 +83,7 @@ class SpaceShip(Layer):
         print "Emptying the fuel tank"
 ```
 
-Le layer doit être instancié avant de pouvoir être utilisé. Son instance se trouve aussi dans le `testing.py` par convention.
+Le layer doit être instancié avant de pouvoir être utilisé. Son instance se trouve aussi dans le fichier `testing.py` par convention.
 
 ```Python
 SPACE_SHIP = SpaceShip()
@@ -150,7 +150,7 @@ class ConstitutionClassSpaceShip(Layer):
         del self['warpDrive']
 ```
 
-Afin d'être sur d'avoir toujours les bonne données, il faut penser à les supprimer dans le `tearDown()` ou le `testTerarDown()`.
+Afin d'être sur d'avoir toujours les bonne données, il faut penser à les supprimer dans le `tearDown()` ou le `testTearDown()`.
 
 Les instances de l'application Zope et du site Plone seront par example stocké de cette manière.
 
@@ -193,9 +193,9 @@ class TestFasterThanLightTravel(unittest.TestCase):
         self.assertEqual(self.warpDrive.running, False)
 ```
 
-### test_suite
+### `test_suite`
 
-Pour `zope.testing` inférieur à la 3.8.0, une méthode doit être ajoutée au fichiers de tests.
+Pour `zope.testing` inférieur à la 3.8.0, une méthode doit être ajoutée aux fichiers de tests.
 
 ```Python
 def test_suite():
@@ -247,7 +247,7 @@ MY_FUNCTIONAL_TESTING = FunctionalTesting(bases=(MY_FIXTURE,), name="MyFixture:F
 
 https://pypi.python.org/pypi/plone.app.testing/4.2.4#layer-base-class
 
-Un layer pour un module Plone doit en fait s'assurer que tout soit initialisé et nettoyé correctement. Il est donc un peu plus complexe qu'un simple layer basique. La classe `plone.app.testing.PloneSandboxLayer` s'occupe de tout cela et permet de simplifier l'écriture d'un layer.
+Un layer pour un module Plone doit en fait s'assurer que tout soit initialisé et nettoyé correctement. Il est donc un peu plus complexe qu'un simple layer basique. La classe `plone.app.testing.PloneSandboxLayer` s'occupe de tout cela et permet de simplifier l'écriture d'un layer pour Plone.
 
 Cette classe met à disposition les méthodes suivantes :
 
@@ -296,7 +296,7 @@ MY_PRODUCT_INTEGRATION_TESTING = IntegrationTesting(bases=(MY_PRODUCT_FIXTURE,),
 MY_PRODUCT_FUNCTIONAL_TESTING = FunctionalTesting(bases=(MY_PRODUCT_FIXTURE,), name="MyProduct:Functional")
 ```
 
-L'écriture de test reste identique :
+L'écriture des tests reste identique :
 
 ```Python
 import unittest
