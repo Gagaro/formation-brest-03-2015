@@ -1,14 +1,16 @@
 # Tests
 
-* https://pypi.python.org/pypi/plone.testing
-* https://pypi.python.org/pypi/plone.app.testing/4.2.4
+## `plone.testing`
+
+https://pypi.python.org/pypi/plone.testing
+
+Contient la logique utilisé pour faire des tests sous Plone.
 
 ## Definitions
 
 https://pypi.python.org/pypi/plone.testing#definitions
 
 ## Layers
-
 
 ### Les bases
 
@@ -58,7 +60,7 @@ Un layer peut dépendre d'autres layers, permettant de tous les initialisé. Exa
 2. C.tearDown()
 ```
 
-### Écrire un layer 
+### Écrire un layer
 
 https://pypi.python.org/pypi/plone.testing#writing-layers
 
@@ -170,14 +172,14 @@ try:
 except ImportError: # Python 2.7
     import unittest
 from my.product.testing import GALAXY_CLASS_SPACE_SHIP
-	
+
 class TestFasterThanLightTravel(unittest.TestCase):
     layer = GALAXY_CLASS_SPACE_SHIP  # Instance du layer !
 
     def setUp(self):
         self.warpDrive = self.layer['warpDrive']
         self.warpDrive.stop()
-		
+
     def tearDown(self):
         self.warpDrive.stop()
 
@@ -206,11 +208,123 @@ https://docs.python.org/2/library/unittest.html#test-cases
 
 ## `plone.app.testing`
 
+https://pypi.python.org/pypi/plone.app.testing/4.2.4
+
+Contient des layers ainsi que des outils permettant de faciliter les tests Plone.
+
 ### Layers
 
-TODO
+https://pypi.python.org/pypi/plone.app.testing/4.2.4#layer-reference
 
-### Installation et utilisation
+`plone.app.testing.PLONE_FIXTURE` est le layer de base de `plone.app.testing`. Il permet de créer un site plone de base avec un utilisateur administrateur et un utilisateur de test. Le layer s'assure aussi que les données Zope (ZODB, configuration, ...) soit correctement nettoyées entre chaque tests.
+
+Il ne faut pas utiliser ce layer directement car il ne gère pas (entre autre) les transactions. Deux autres ayant ce layer pour base sont mis à disposition :
+
+* `plone.app.testing.PLONE_INTEGRATION_TESTING`, pour les tests unitaires ou d'intégrations
+* `plone.app.testing.PLONE_FUNCTIONAL_TESTING`, pour les tests fonctionnels
+
+Trois ressources sont accessibles sur ces layers : `app`, `portal` et `request`.
+
+Pour créer un nouveau layer, il convient de lui faire utiliser `PLONE_FIXTURE` comme base et d'instancier un layer pour les tests d'intégration et un pour les tests fonctionnels :
+
+```Python
+from plone.testing import Layer
+from plone.app.testing import PLONE_FIXTURE
+from plone.app.testing import IntegrationTesting, FunctionalTesting
+
+class MyFixture(Layer):
+    defaultBases = (PLONE_FIXTURE,)
+
+    ...
+
+MY_FIXTURE = MyFixture()
+
+MY_INTEGRATION_TESTING = IntegrationTesting(bases=(MY_FIXTURE,), name="MyFixture:Integration")
+MY_FUNCTIONAL_TESTING = FunctionalTesting(bases=(MY_FIXTURE,), name="MyFixture:Functional")
+```
+
+### `PloneSandboxLayer`
+
+https://pypi.python.org/pypi/plone.app.testing/4.2.4#layer-base-class
+
+Un layer pour un module Plone doit en fait s'assurer que tout soit initialisé et nettoyé correctement. Il est donc un peu plus complexe qu'un simple layer basique. La classe `plone.app.testing.PloneSandboxLayer` s'occupe de tout cela et permet de simplifier l'écriture d'un layer.
+
+Cette classe met à disposition les méthodes suivantes :
+
+* setUpZope(self, app, configurationContext)
+* setUpPloneSite(self, portal)
+* tearDownZope(self, app)
+* tearDownPloneSite(self, portal)
+
+```Python
+from plone.app.testing import PloneSandboxLayer
+from plone.app.testing import PLONE_FIXTURE
+from plone.app.testing import IntegrationTesting
+
+from plone.testing import z2
+
+class MyProduct(PloneSandboxLayer):
+
+    defaultBases = (PLONE_FIXTURE,)
+
+    def setUpZope(self, app, configurationContext):
+        # Load ZCML
+        import my.product
+        self.loadZCML(package=my.product)
+
+        # Install product and call its initialize() function
+        z2.installProduct(app, 'my.product')
+
+        # Note: you can skip this if my.product is not a Zope 2-style
+        # product, i.e. it is not in the Products.* namespace and it
+        # does not have a <five:registerPackage /> directive in its
+        # configure.zcml.
+
+    def setUpPloneSite(self, portal):
+        # Install into Plone site using portal_setup
+        self.applyProfile(portal, 'my.product:default')
+
+    def tearDownZope(self, app):
+        # Uninstall product
+        z2.uninstallProduct(app, 'my.product')
+
+        # Note: Again, you can skip this if my.product is not a Zope 2-
+        # style product
+
+MY_PRODUCT_FIXTURE = MyProduct()
+MY_PRODUCT_INTEGRATION_TESTING = IntegrationTesting(bases=(MY_PRODUCT_FIXTURE,), name="MyProduct:Integration")
+MY_PRODUCT_FUNCTIONAL_TESTING = FunctionalTesting(bases=(MY_PRODUCT_FIXTURE,), name="MyProduct:Functional")
+```
+
+L'écriture de test reste identique :
+
+```Python
+import unittest
+from my.product.testing import MY_PRODUCT_INTEGRATION_TESTING
+
+class IntegrationTest(unittest.TestCase):
+
+    layer = MY_PRODUCT_INTEGRATION_TESTING
+
+    def test_page_dublin_core_title(self):
+        portal = self.layer['portal']
+
+        page1 = portal['page-1']
+        page1.title = u"Some title"
+
+        self.assertEqual(page1.Title(), u"Some title")
+```
+
+### Helpers
+
+https://pypi.python.org/pypi/plone.app.testing/4.2.4#helper-functions
+
+Un certain nombre de méthodes sont disponibles pour faciliter les tests, entre autres :
+
+* `ploneSite`, pour récuperer le site plone depuis un layer.
+* `login`, `logout` et `setRoles` pour la gestion des utilisateurs.
+
+## Installation et utilisation
 
 Dans le `setup.py` :
 ```Python
@@ -248,16 +362,71 @@ $ bin/test -s my.package
 $ bin/test --help
 ```
 
+## Tests fonctionnels
+
+https://pypi.python.org/pypi/plone.app.testing/4.2.4#simulating-browser-interaction
+
+`zope.testbrowser` peut être utilisé pour simuler des interactions de l'utilisateurs.
+
+```Python
+import unittest
+from plone.testing.z2 import Browser
+from plone.app.testing import TEST_USER_NAME, TEST_USER_PASSWORD
+from my.product.testing import MY_PRODUCT_INTEGRATION_TESTING
+
+class FunctionalTest(unittest.TestCase):
+
+    layer = MY_PRODUCT_FUNCTIONAL_TESTING
+
+    def test_home_welcome(self):
+        portal = self.layer['portal']
+        app = self.layer['app']
+
+        browser = Browser(app)
+        browser.open(portal.absolute_url())
+
+        self.assertTrue(u"Welcome" in browser.contents)
+
+    def test_login(self):
+        portal = self.layer['portal']
+        app = self.layer['app']
+        browser = Browser(app)
+
+        browser.open(portal.absolute_url() + '/login_form')
+        browser.getControl(name='__ac_name').value = TEST_USER_NAME
+        browser.getControl(name='__ac_password').value = TEST_USER_PASSWORD
+        browser.getControl(name='submit').click()
+
+        self.assertTrue(TEST_USER_NAME in browser.contents)
+```
+
+Plus d'informations sur l'utilisation du browser sur la documentation de `zope.testbrowser` :
+
+https://pypi.python.org/pypi/zope.testbrowser#page-contents
+
 ## Autres notions
 
 ### Doctest
+
+Permet la création de tests dans les doctstrings Python.
 
 https://pypi.python.org/pypi/plone.testing#doctests
 
 ### Coverage
 
+Permet de determiner quelle partie du module est testé ou non.
+
 https://pypi.python.org/pypi/plone.testing#coverage-reporting
 
 ### Mock
 
+Permet de créer de faux objets/méthodes.
+
 https://pypi.python.org/pypi/plone.testing#mock-requests
+https://pypi.python.org/pypi/mock
+
+### Selenium
+
+Autre bibliothèque gérant les tests fonctionnels en utilisant directement le navigateur.
+
+https://github.com/plone/plone.app.testing/blob/master/plone/app/testing/selenium.rst
