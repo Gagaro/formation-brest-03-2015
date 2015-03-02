@@ -6,20 +6,7 @@ http://muthukadan.net/docs/zca.html
 
 http://muthukadan.net/docs/zca.html#interfaces
 
-```
-Interfaces are objects that specify (document) the external behavior
-of objects that "provide" them.  An interface specifies behavior
-through:
-
-- Informal documentation in a doc string
-
-- Attribute definitions
-
-- Invariants, which are conditions that must hold for objects that
-  provide the interface
-```
-
-Une interfaces spécifie les caractéristiques d'un objet. Ce que l'objet peut faire. Pour voir comment, il faut regarder son implémnetation.
+Une interfaces spécifie les caractéristiques d'un objet. Ce que l'objet peut faire. Pour voir comment, il faut regarder son implémentation.
 
 ```Python
 from zope.interface import Interface, implements
@@ -164,7 +151,7 @@ Le nom est une chaine vide ("") par défaut.
 
 ### Récuperation
 
-Deux méthodes sont disponible pour récuperer des adapters : `getAdapter` et `queryAdapter`. Elles prennents les meme arguments, mais `getAdapter` soulevera une exception tandis que `queryAdapter` retournera None si aucun adapter n'est trouvé.
+Deux méthodes sont disponible pour récuperer des adapters : `getAdapter` et `queryAdapter`. Elles prennent les même arguments, mais `getAdapter` soulevera une exception tandis que `queryAdapter` retournera None si aucun adapter n'est trouvé.
 
 ```Python
 >>> from zope.component import getAdapter
@@ -360,7 +347,7 @@ Les factories sont un cas particulier d'utilitaires. Ils implementent tous IFact
 >>> gsm.registerUtility(factory, IFactory, 'fakedb')
 
 >>> from zope.component import queryUtility
->>> queryUtility(IFactory, 'fakedb')() #doctest: +ELLIPSIS
+>>> queryUtility(IFactory, 'fakedb')()
 <FakeDb object at ...>
 ```
 
@@ -368,6 +355,6 @@ Dans le cas des factories, il est également possible de faire :
 
 ```Python
 >>> from zope.component import createObject
->>> createObject('fakedb') #doctest: +ELLIPSIS
+>>> createObject('fakedb')
 <FakeDb object at ...>
 ```
