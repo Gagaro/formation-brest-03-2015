@@ -372,7 +372,7 @@ https://pypi.python.org/pypi/plone.app.testing/4.2.4#simulating-browser-interact
 import unittest
 from plone.testing.z2 import Browser
 from plone.app.testing import TEST_USER_NAME, TEST_USER_PASSWORD
-from my.product.testing import MY_PRODUCT_INTEGRATION_TESTING
+from my.product.testing import MY_PRODUCT_FUNCTIONAL_TESTING
 
 class FunctionalTest(unittest.TestCase):
 
@@ -430,3 +430,4 @@ https://pypi.python.org/pypi/mock
 Autre bibliothèque gérant les tests fonctionnels en utilisant directement le navigateur.
 
 https://github.com/plone/plone.app.testing/blob/master/plone/app/testing/selenium.rst
+https://selenium-python.readthedocs.org
