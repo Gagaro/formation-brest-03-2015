@@ -63,6 +63,10 @@ class ISpecialGuest(Interface):
     """A special guest"""
 ```
 
+Example avec les browser layers :
+
+https://pypi.python.org/pypi/plone.browserlayer
+
 ## Adapters
 
 Un adapter prend un objet implémentant une interface en entrée et fournis un objet implémentant une autre interface en sortie. Example :
